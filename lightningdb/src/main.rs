@@ -1,4 +1,5 @@
-use openssl::ssl::{SslAcceptor, SslStream};
+use ring::aead::{self, BoundKey};
+use ring::{agreement, rand};
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
 
@@ -28,10 +29,17 @@ fn handle_client(mut stream: TcpStream) {
 
 fn main() {
     let listener = TcpListener::bind("127.0.0.1:6379").unwrap();
-    let pool = ThreadPool::new(1);
-    let acceptor = SslAcceptor::mozilla_modern_v5(openssl::ssl::SslMethod::tls()).unwrap();
+    let rng = rand::SystemRandom::new();
+    let private_key = agreement::EphemeralPrivateKey::generate(&agreement::X25519, &rng).unwrap();
+    let public_key = private_key.compute_public_key().unwrap();
 
-    println!("Server listening on port 6379");
+    let pool = ThreadPool::new(1);
+
+    println!(
+        "Server starte, listening on {}",
+        listener.local_addr().unwrap()
+    );
+    println!("Server public key: {:?}", public_key.as_ref());
 
     for stream in listener.incoming() {
         match stream {
