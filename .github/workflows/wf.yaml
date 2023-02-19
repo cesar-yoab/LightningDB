@@ -37,5 +37,4 @@ jobs:
       run: cargo clippy -- -W warnings
     
     - name: Codecov
-      working-directory: ./lightningdb
       uses: codecov/codecov-action@v3
