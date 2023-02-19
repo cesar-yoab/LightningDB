@@ -34,6 +34,7 @@ def main():
         print(response.decode(), end="")
 
         # Print the prompt again
+        print()
         print("> ", end="")
 
 if __name__ == '__main__':

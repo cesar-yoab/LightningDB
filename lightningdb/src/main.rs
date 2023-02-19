@@ -1,11 +1,63 @@
-use ring::aead::{self, BoundKey};
-use ring::{agreement, rand};
+mod commands;
+mod db;
+use commands::{Command, CommandType};
+use db::DB;
+use lightningdb::ThreadPool;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
+use std::sync::{Arc, Mutex};
 
-use lightningdb::ThreadPool;
+fn execute(command: &Command, db: Arc<Mutex<DB>>) -> Result<String, &'static str> {
+    match command.command {
+        CommandType::GET => {
+            println!("GET command");
+            if command.args.len() != 1 {
+                return Err("Too many arguments");
+            }
+            if let Some(key) = command.args.get(0) {
+                let result = db.lock().unwrap().get(key.as_str());
+                match result {
+                    Ok(result) => return Ok(result),
+                    Err(e) => return Err(e),
+                }
+            } else {
+                return Err("Internal error");
+            }
+        }
 
-fn handle_client(mut stream: TcpStream) {
+        CommandType::SET => {
+            println!("SET command");
+            if command.args.len() != 2 {
+                return Err("Not enough arguments\nShould follow the convention `SET key value`");
+            }
+
+            let key = command.args[0].as_str();
+            let value = command.args[1].as_str();
+            let result = db.lock().unwrap().set(key, value);
+            match result {
+                Some(_) => return Ok("Old value updated".to_string()),
+                None => return Ok("Value created".to_string()),
+            }
+        }
+        CommandType::DEL => {
+            println!("DEL command");
+            if command.args.len() != 1 {
+                return Err("Too many arguments");
+            }
+            let key = command.args[0].as_str();
+            match db.lock().unwrap().del(key) {
+                Some(_) => return Ok("Key removed".to_string()),
+                None => return Ok("No key found".to_string()),
+            }
+        }
+        CommandType::SAVE => {
+            println!("SAVE command");
+            return Ok("Saved to disk".to_string());
+        }
+    }
+}
+
+fn handle_client(mut stream: TcpStream, db: Arc<Mutex<DB>>) {
     let mut buffer = [0; 1024];
 
     loop {
@@ -15,9 +67,22 @@ fn handle_client(mut stream: TcpStream) {
                     break;
                 }
 
-                let message = String::from_utf8_lossy(&buffer[..size]);
-                println!("Received message: {}", message);
-                stream.write_all(b"Message received\n").unwrap();
+                let command_str = String::from_utf8_lossy(&buffer[..size]);
+                let command = Command::new(&command_str);
+                match command {
+                    Ok(command) => {
+                        let result = execute(&command, Arc::clone(&db));
+                        match result {
+                            Ok(message) => stream.write_all(message.as_bytes()).unwrap(),
+                            Err(e) => stream.write_all(e.as_bytes()).unwrap(),
+                        }
+                        continue;
+                    }
+                    Err(e) => {
+                        stream.write_all(e.as_bytes()).unwrap();
+                        continue;
+                    }
+                }
             }
             Err(e) => {
                 println!("Error reading from socket: {}", e);
@@ -29,24 +94,23 @@ fn handle_client(mut stream: TcpStream) {
 
 fn main() {
     let listener = TcpListener::bind("127.0.0.1:6379").unwrap();
-    let rng = rand::SystemRandom::new();
-    let private_key = agreement::EphemeralPrivateKey::generate(&agreement::X25519, &rng).unwrap();
-    let public_key = private_key.compute_public_key().unwrap();
-
     let pool = ThreadPool::new(1);
+    let db = Arc::new(Mutex::new(DB::new()));
 
     println!(
         "Server starte, listening on {}",
         listener.local_addr().unwrap()
     );
-    println!("Server public key: {:?}", public_key.as_ref());
 
     for stream in listener.incoming() {
         match stream {
             Ok(stream) => {
                 println!("New client connected: {}", stream.peer_addr().unwrap());
-                pool.execute(|| {
-                    handle_client(stream);
+                // Make a clone of the Arc pointer
+                let db = Arc::clone(&db);
+                // We use the `move` keyword to force a closure to take ownership of the values it uses
+                pool.execute(move || {
+                    handle_client(stream, db);
                 });
             }
             Err(e) => {
