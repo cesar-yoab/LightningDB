@@ -11,7 +11,7 @@ LightningDB is a hobby project that aims to replicate the functionality of the p
 
 ## Features
 
-Rust-Redis supports the following features:
+LightningDB supports the following features:
 
 - In-memory key-value store: All data is stored in RAM, making it ideal for fast read/write operations.
 - String data type: Key-value pairs can store any string value.
@@ -49,10 +49,10 @@ python lightningdb-cli
 ```
 
 ## Usage
-- `**SET key value**`: Set the value of a key.
-- `**GET key**`: Get the value of a key
-- `**DEL key**`: Delete a key-value pair
-- `**SAVE**`: Save the current data to disk
+- `SET key value`: Set the value of a key.
+- `GET key`: Get the value of a key
+- `DEL key`: Delete a key-value pair
+- `SAVE`: Save the current data to disk
 
 ## Performance
 Rust-Redis is designed to be fast and efficient, with performance comparable to Redis. Some initial performance benchmarks show that Rust-Redis can handle thousands of requests per second with low latency.
