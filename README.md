@@ -20,16 +20,42 @@ Rust-Redis supports the following features:
 
 ## Usage
 
----
 
 ### 1. Building from source
 
+#### Requirements
+
 - Rust programming language if you wish to build the project from source
 
-## Getting Started
+#### Build
 1. Clone the repository:
 ```bash
 git clone https://github.com/cesar-yoab/LightningDB/
 ```
 
 2. Build the project
+```bash
+cd LightningDB/lightningdb
+cargo build --release
+```
+3. Run the server:
+```bash
+cargo run --release
+```
+
+4. Connect to the server using the provided python client
+```bash
+python lightningdb-cli
+```
+
+## Usage
+- `**SET key value**`: Set the value of a key.
+- `**GET key**`: Get the value of a key
+- `**DEL key**`: Delete a key-value pair
+- `**SAVE**`: Save the current data to disk
+
+## Performance
+Rust-Redis is designed to be fast and efficient, with performance comparable to Redis. Some initial performance benchmarks show that Rust-Redis can handle thousands of requests per second with low latency.
+
+## License
+This project is licensed under the GPL-3.0 License - see the [license](https://github.com/cesar-yoab/LightningDB/blob/main/LICENSE)
