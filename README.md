@@ -3,8 +3,8 @@
 </p>
 
 # LightningDB: A Redis-like In-Memory Database Written in Rust
-![image](https://img.shields.io/badge/license-GPL--3.0-blue)
-![image](https://img.shields.io/badge/build-passing-green)
+[![image](https://img.shields.io/badge/license-GPL--3.0-blue)](https://github.com/cesar-yoab/LightningDB/blob/main/LICENSE)
+[![image](https://img.shields.io/badge/build-passing-green)](https://img.shields.io/github/actions/workflow/status/cesar-yoab/LightningDB/wf.yaml)
 ![image](https://img.shields.io/badge/docker--build-passing-green)
 
 LightningDB is a hobby project that aims to replicate the functionality of the popular Redis database using the Rust programming language. This project provides an in-memory key-value store that can be used as a simple caching layer, or as a data structure server for complex applications.
