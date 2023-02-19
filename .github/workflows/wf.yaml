@@ -26,12 +26,16 @@ jobs:
 
     - name: Run cargo check
       run: cargo check --workspace
+      working-directory: lightningdb
 
     - name: Run cargo fmt
       run: cargo fmt --al --check
+      working-directory: lightningdb
     
     - name: Run cargo clippy
       run: cargo clippy -- -W warnings
+      working-directory: lightningdb
     
     - name: Codecov
       uses: codecov/codecov-action@v3
+      working-directory: lightningdb
