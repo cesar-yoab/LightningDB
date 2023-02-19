@@ -25,17 +25,17 @@ jobs:
           components: rustfmt, clippy
 
     - name: Run cargo check
+      working-directory: ./lightningdb
       run: cargo check --workspace
-      working-directory: lightningdb
 
     - name: Run cargo fmt
+      working-directory: ./lightningdb
       run: cargo fmt --al --check
-      working-directory: lightningdb
     
     - name: Run cargo clippy
+      working-directory: ./lightningdb
       run: cargo clippy -- -W warnings
-      working-directory: lightningdb
     
     - name: Codecov
+      working-directory: ./lightningdb
       uses: codecov/codecov-action@v3
-      working-directory: lightningdb
