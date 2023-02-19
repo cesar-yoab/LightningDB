@@ -30,7 +30,7 @@ jobs:
 
     - name: Run cargo fmt
       working-directory: ./lightningdb
-      run: cargo fmt --al --check
+      run: cargo fmt --all --check
     
     - name: Run cargo clippy
       working-directory: ./lightningdb

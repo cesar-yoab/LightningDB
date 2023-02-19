@@ -1,8 +1,9 @@
 pub enum CommandType {
-    GET,
-    SET,
-    DEL,
+    AUTH,
     SAVE,
+    STRINGSGET,
+    STRINGSSET,
+    STRINGSDEL,
 }
 
 pub struct Command {
@@ -24,10 +25,11 @@ impl Command {
 
     fn parse_command(command: &str) -> Result<CommandType, &'static str> {
         match command.trim().to_uppercase().as_str() {
-            "GET" => Ok(CommandType::GET),
-            "SET" => Ok(CommandType::SET),
-            "DEL" => Ok(CommandType::DEL),
+            "GET" => Ok(CommandType::STRINGSGET),
+            "SET" => Ok(CommandType::STRINGSSET),
+            "DEL" => Ok(CommandType::STRINGSDEL),
             "SAVE" => Ok(CommandType::SAVE),
+            "AUTH" => Ok(CommandType::AUTH),
             _ => Err("Unknown command"),
         }
     }

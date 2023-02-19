@@ -5,17 +5,17 @@ use db::DB;
 use lightningdb::ThreadPool;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
-fn execute(command: &Command, db: Arc<Mutex<DB>>) -> Result<String, &'static str> {
+fn execute(command: &Command, db: Arc<DB>) -> Result<String, &'static str> {
     match command.command {
-        CommandType::GET => {
+        CommandType::STRINGSGET => {
             println!("GET command");
             if command.args.len() != 1 {
                 return Err("Too many arguments");
             }
             if let Some(key) = command.args.get(0) {
-                let result = db.lock().unwrap().get(key.as_str());
+                let result = db.strings_get(key.as_str());
                 match result {
                     Ok(result) => return Ok(result),
                     Err(e) => return Err(e),
@@ -25,7 +25,7 @@ fn execute(command: &Command, db: Arc<Mutex<DB>>) -> Result<String, &'static str
             }
         }
 
-        CommandType::SET => {
+        CommandType::STRINGSSET => {
             println!("SET command");
             if command.args.len() != 2 {
                 return Err("Not enough arguments\nShould follow the convention `SET key value`");
@@ -33,19 +33,19 @@ fn execute(command: &Command, db: Arc<Mutex<DB>>) -> Result<String, &'static str
 
             let key = command.args[0].as_str();
             let value = command.args[1].as_str();
-            let result = db.lock().unwrap().set(key, value);
+            let result = db.strings_set(key, value);
             match result {
                 Some(_) => return Ok("Old value updated".to_string()),
                 None => return Ok("Value created".to_string()),
             }
         }
-        CommandType::DEL => {
+        CommandType::STRINGSDEL => {
             println!("DEL command");
             if command.args.len() != 1 {
                 return Err("Too many arguments");
             }
             let key = command.args[0].as_str();
-            match db.lock().unwrap().del(key) {
+            match db.strings_del(key) {
                 Some(_) => return Ok("Key removed".to_string()),
                 None => return Ok("No key found".to_string()),
             }
@@ -54,10 +54,13 @@ fn execute(command: &Command, db: Arc<Mutex<DB>>) -> Result<String, &'static str
             println!("SAVE command");
             return Ok("Saved to disk".to_string());
         }
+        CommandType::AUTH => {
+            return Ok("Auth".to_string());
+        }
     }
 }
 
-fn handle_client(mut stream: TcpStream, db: Arc<Mutex<DB>>) {
+fn handle_client(mut stream: TcpStream, db: Arc<DB>) {
     let mut buffer = [0; 1024];
 
     loop {
@@ -95,7 +98,7 @@ fn handle_client(mut stream: TcpStream, db: Arc<Mutex<DB>>) {
 fn main() {
     let listener = TcpListener::bind("127.0.0.1:6379").unwrap();
     let pool = ThreadPool::new(1);
-    let db = Arc::new(Mutex::new(DB::new()));
+    let db = Arc::new(DB::new());
 
     println!(
         "Server starte, listening on {}",

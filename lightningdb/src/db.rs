@@ -1,28 +1,32 @@
-use std::collections::HashMap;
+use dashmap::DashMap;
+use std::sync::Mutex;
 
 pub struct DB {
-    kv_map: HashMap<String, String>,
+    strings: Mutex<DashMap<String, String>>,
 }
 
 impl DB {
     pub fn new() -> DB {
         DB {
-            kv_map: HashMap::new(),
+            strings: Mutex::new(DashMap::new()),
         }
     }
 
-    pub fn get(&mut self, key: &str) -> Result<String, &'static str> {
-        match self.kv_map.get(key) {
+    pub fn strings_get(&self, key: &str) -> Result<String, &'static str> {
+        match self.strings.lock().unwrap().get(key) {
             Some(value) => Ok(value.to_string()),
             None => Err("Value not found"),
         }
     }
 
-    pub fn set(&mut self, key: &str, value: &str) -> Option<String> {
-        self.kv_map.insert(key.to_string(), value.to_string())
+    pub fn strings_set(&self, key: &str, value: &str) -> Option<String> {
+        self.strings
+            .lock()
+            .unwrap()
+            .insert(key.to_string(), value.to_string())
     }
 
-    pub fn del(&mut self, key: &str) -> Option<String> {
-        self.kv_map.remove(key)
+    pub fn strings_del(&self, key: &str) -> Option<(String, String)> {
+        self.strings.lock().unwrap().remove(key)
     }
 }
