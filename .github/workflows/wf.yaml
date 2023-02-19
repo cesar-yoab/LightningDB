@@ -1,0 +1,37 @@
+name: Push/Pull Workflow
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check:
+    name: Build check 
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout sources
+      uses: actions/checkout@master
+
+    - name: rust-toolchain
+      uses: actions-rs/toolchain@v1.0.6
+      with:
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
+
+    - name: Run cargo check
+      run: cargo check --workspace
+
+    - name: Run cargo fmt
+      run: cargo fmt --al --check
+    
+    - name: Run cargo clippy
+      run: cargo clippy -- -W warnings
+    
+    - name: Codecov
+      uses: codecov/codecov-action@v3
