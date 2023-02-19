@@ -1,6 +1,6 @@
+use openssl::ssl::{SslAcceptor, SslStream};
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
-use std::thread;
 
 use lightningdb::ThreadPool;
 
@@ -28,14 +28,16 @@ fn handle_client(mut stream: TcpStream) {
 
 fn main() {
     let listener = TcpListener::bind("127.0.0.1:6379").unwrap();
-    let pool = ThreadPool::new(4);
+    let pool = ThreadPool::new(1);
+    let acceptor = SslAcceptor::mozilla_modern_v5(openssl::ssl::SslMethod::tls()).unwrap();
+
     println!("Server listening on port 6379");
 
     for stream in listener.incoming() {
         match stream {
             Ok(stream) => {
                 println!("New client connected: {}", stream.peer_addr().unwrap());
-                pool.execute(move || {
+                pool.execute(|| {
                     handle_client(stream);
                 });
             }
