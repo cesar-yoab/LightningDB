@@ -18,8 +18,7 @@ LightningDB supports the following features:
 - Basic operations: Supports basic Redis operations like SET, GET, and DEL.
 - Persistence: Supports persistence to disk through serialization and deserialization of data.
 
-## Usage
-
+## Getting Started
 
 ### 1. Building from source
 
