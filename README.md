@@ -3,7 +3,7 @@
 </p>
 
 # LightningDB: A Redis-like In-Memory Database Written in Rust
-![image](https://img.shields.io/badge/license-GPL--3.0-blue)
+[![image](https://img.shields.io/badge/license-GPL--3.0-blue)](https://github.com/cesar-yoab/LightningDB/blob/main/LICENSE)
 [![image](https://img.shields.io/badge/build-passing-green)](https://img.shields.io/github/actions/workflow/status/cesar-yoab/LightningDB/wf.yaml)
 ![image](https://img.shields.io/badge/docker--build-passing-green)
 
