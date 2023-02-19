@@ -4,6 +4,10 @@ pub enum CommandType {
     STRINGSGET,
     STRINGSSET,
     STRINGSDEL,
+    STRINGAPPEND,
+    STRINGGETSET,
+    STRINGGETDEL,
+    STRINGSTRLEN,
 }
 
 pub struct Command {
@@ -29,6 +33,10 @@ impl Command {
             "SET" => Ok(CommandType::STRINGSSET),
             "DEL" => Ok(CommandType::STRINGSDEL),
             "SAVE" => Ok(CommandType::SAVE),
+            "APPEND" => Ok(CommandType::STRINGAPPEND),
+            "GETSET" => Ok(CommandType::STRINGGETSET),
+            "GETDEL" => Ok(CommandType::STRINGGETDEL),
+            "STRLEN" => Ok(CommandType::STRINGSTRLEN),
             "AUTH" => Ok(CommandType::AUTH),
             _ => Err("Unknown command"),
         }

@@ -29,4 +29,29 @@ impl DB {
     pub fn strings_del(&self, key: &str) -> Option<(String, String)> {
         self.strings.lock().unwrap().remove(key)
     }
+
+    pub fn strings_append(&self, key: &str, append: &str) -> Option<String> {
+        match self.strings_get(key) {
+            Ok(old_value) => {
+                let new_value = old_value + &append.to_string();
+                return self.strings_set(key, new_value.as_str());
+            }
+
+            Err(_) => {
+                return self.strings_set(key, append);
+            }
+        }
+    }
+
+    pub fn strings_len(&self, key: &str) -> Option<usize> {
+        match self.strings_get(key) {
+            Ok(value) => {
+                return Some(value.len());
+            }
+
+            Err(_) => (),
+        }
+
+        None
+    }
 }

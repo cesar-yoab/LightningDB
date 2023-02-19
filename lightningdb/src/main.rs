@@ -35,8 +35,10 @@ fn execute(command: &Command, db: Arc<DB>) -> Result<String, &'static str> {
             let value = command.args[1].as_str();
             let result = db.strings_set(key, value);
             match result {
-                Some(_) => return Ok("Old value updated".to_string()),
-                None => return Ok("Value created".to_string()),
+                // Old value replaced
+                Some(_) => return Ok("Ok".to_string()),
+                // New value created
+                None => return Ok("Ok".to_string()),
             }
         }
         CommandType::STRINGSDEL => {
@@ -46,13 +48,73 @@ fn execute(command: &Command, db: Arc<DB>) -> Result<String, &'static str> {
             }
             let key = command.args[0].as_str();
             match db.strings_del(key) {
-                Some(_) => return Ok("Key removed".to_string()),
+                Some((removed_key, removed_value)) => {
+                    return Ok(format!("{} : {}", removed_key, removed_value))
+                }
                 None => return Ok("No key found".to_string()),
+            }
+        }
+        CommandType::STRINGGETSET => {
+            println!("GETSET command");
+            if command.args.len() != 2 {
+                return Err("Not enough arguments\nShould follow the convention `SET key value`");
+            }
+
+            let key = command.args[0].as_str();
+            let value = command.args[1].as_str();
+            let result = db.strings_set(key, value);
+            match result {
+                // Old value replaced
+                Some(old_value) => return Ok(format!("{}", old_value)),
+                // New value created
+                None => return Ok("No old value was found".to_string()),
+            }
+        }
+        CommandType::STRINGGETDEL => {
+            println!("GETDEL command");
+            if command.args.len() != 1 {
+                return Err("Too many arguments");
+            }
+            let key = command.args[0].as_str();
+            match db.strings_del(key) {
+                Some((_, removed_value)) => return Ok(format!("{}", removed_value)),
+                None => return Ok("No key found".to_string()),
+            }
+        }
+        CommandType::STRINGAPPEND => {
+            println!("SET command");
+            if command.args.len() != 2 {
+                return Err("Not enough arguments\nShould follow the convention `SET key value`");
+            }
+
+            let key = command.args[0].as_str();
+            let value = command.args[1].as_str();
+            let result = db.strings_append(key, value);
+            match result {
+                // Old value replaced
+                Some(_) => return Ok("Ok".to_string()),
+                // New value created
+                None => return Ok("Ok".to_string()),
+            }
+        }
+        CommandType::STRINGSTRLEN => {
+            println!("GET command");
+            if command.args.len() != 1 {
+                return Err("Too many arguments");
+            }
+            if let Some(key) = command.args.get(0) {
+                let result = db.strings_len(key.as_str());
+                match result {
+                    Some(len) => return Ok(format!("{}", len)),
+                    None => return Err("Key does not exist"),
+                }
+            } else {
+                return Err("Internal error");
             }
         }
         CommandType::SAVE => {
             println!("SAVE command");
-            return Ok("Saved to disk".to_string());
+            return Ok("Ok".to_string());
         }
         CommandType::AUTH => {
             return Ok("Auth".to_string());
