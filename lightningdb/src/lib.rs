@@ -1,92 +1,76 @@
-use std::{
-    sync::{mpsc, Arc, Mutex},
-    thread,
-};
+//! A minimal (i.e. very incomplete) implementation of a Redis server and
+//! client.
+//!
+//! The purpose of this project is to provide a larger example of an
+//! asynchronous Rust project built with Tokio. Do not attempt to run this in
+//! production... seriously.
+//!
+//! # Layout
+//!
+//! The library is structured such that it can be used with guides. There are
+//! modules that are public that probably would not be public in a "real" redis
+//! client library.
+//!
+//! The major components are:
+//!
+//! * `server`: Redis server implementation. Includes a single `run` function
+//!   that takes a `TcpListener` and starts accepting redis client connections.
+//!
+//! * `client`: an asynchronous Redis client implementation. Demonstrates how to
+//!   build clients with Tokio.
+//!
+//! * `cmd`: implementations of the supported Redis commands.
+//!
+//! * `frame`: represents a single Redis protocol frame. A frame is used as an
+//!   intermediate representation between a "command" and the byte
+//!   representation.
 
-pub struct ThreadPool {
-    workers: Vec<Worker>,
-    sender: Option<mpsc::Sender<Job>>,
-}
+pub mod blocking_client;
+pub mod client;
 
-type Job = Box<dyn FnOnce() + Send + 'static>;
+pub mod cmd;
+pub use cmd::Command;
 
-impl ThreadPool {
-    /// Create a new ThreadPool.
-    ///
-    /// The size is the number of threads in the pool.
-    ///
-    /// # Panics
-    ///
-    /// The `new` function will panic if the size is zero.
-    pub fn new(size: usize) -> ThreadPool {
-        assert!(size > 0);
+mod connection;
+pub use connection::Connection;
 
-        let (sender, receiver) = mpsc::channel();
+pub mod frame;
+pub use frame::Frame;
 
-        let receiver = Arc::new(Mutex::new(receiver));
+mod db;
+use db::Db;
+use db::DbDropGuard;
 
-        let mut workers = Vec::with_capacity(size);
+mod parse;
+use parse::{Parse, ParseError};
 
-        for id in 0..size {
-            workers.push(Worker::new(id, Arc::clone(&receiver)));
-        }
+pub mod server;
 
-        ThreadPool {
-            workers,
-            sender: Some(sender),
-        }
-    }
+mod buffer;
+pub use buffer::{buffer, Buffer};
 
-    pub fn execute<F>(&self, f: F)
-    where
-        F: FnOnce() + Send + 'static,
-    {
-        let job = Box::new(f);
+mod shutdown;
+use shutdown::Shutdown;
 
-        self.sender.as_ref().unwrap().send(job).unwrap();
-    }
-}
+/// Default port that a redis server listens on.
+///
+/// Used if no port is specified.
+pub const DEFAULT_PORT: u16 = 6379;
 
-impl Drop for ThreadPool {
-    fn drop(&mut self) {
-        drop(self.sender.take());
+/// Error returned by most functions.
+///
+/// When writing a real application, one might want to consider a specialized
+/// error handling crate or defining an error type as an `enum` of causes.
+/// However, for our example, using a boxed `std::error::Error` is sufficient.
+///
+/// For performance reasons, boxing is avoided in any hot path. For example, in
+/// `parse`, a custom error `enum` is defined. This is because the error is hit
+/// and handled during normal execution when a partial frame is received on a
+/// socket. `std::error::Error` is implemented for `parse::Error` which allows
+/// it to be converted to `Box<dyn std::error::Error>`.
+pub type Error = Box<dyn std::error::Error + Send + Sync>;
 
-        for worker in &mut self.workers {
-            println!("Shutting down worker {}", worker.id);
-
-            if let Some(thread) = worker.thread.take() {
-                thread.join().unwrap();
-            }
-        }
-    }
-}
-
-struct Worker {
-    id: usize,
-    thread: Option<thread::JoinHandle<()>>,
-}
-
-impl Worker {
-    fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<Job>>>) -> Worker {
-        let thread = thread::spawn(move || loop {
-            let message = receiver.lock().unwrap().recv();
-
-            match message {
-                Ok(job) => {
-                    println!("Worker {id} got a job; executing.");
-
-                    job();
-                }
-                Err(_) => {
-                    println!("Worker {id} disconnected; shutting down.");
-                    break;
-                }
-            }
-        });
-
-        Worker {
-            id,
-            thread: Some(thread),
-        }
-    }
-}
+/// A specialized `Result` type for mini-redis operations.
+///
+/// This is defined as a convenience.
+pub type Result<T> = std::result::Result<T, Error>;

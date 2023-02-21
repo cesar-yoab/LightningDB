@@ -7,7 +7,9 @@
 [![image](https://img.shields.io/badge/build-passing-green)](https://img.shields.io/github/actions/workflow/status/cesar-yoab/LightningDB/wf.yaml)
 ![image](https://img.shields.io/badge/docker--build-passing-green)
 
-LightningDB is a hobby project that aims to replicate the functionality of the popular Redis database using the Rust programming language. This project provides an in-memory key-value store that can be used as a simple caching layer, or as a data structure server for complex applications.
+LightningDB is a hobby project that aims to replicate the functionality of the popular Redis database using the Rust programming language. This project provides an in-memory key-value store that can be used as a simple caching layer, or as a data structure server for complex applications. This project 
+is a fork of the project [mini-redis](https://github.com/tokio-rs/mini-redis) from which we build on top to add more features and as a learning
+opportunity to work on a "big" asyncronous rust project with [tokio](https://github.com/tokio-rs/tokio).
 
 ## Features
 

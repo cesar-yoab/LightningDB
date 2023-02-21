@@ -2,9 +2,32 @@
 name = "lightningdb"
 version = "0.1.0"
 edition = "2021"
+repository = "https://github.com/cesar-yoab/LightningDB"
+description = """
+An attempt at creating an in-memory database.
+"""
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[[bin]]
+name = "lightningdb-cli"
+path = "src/bin/cli.rs"
+
+[[bin]]
+name = "lightningdb-server"
+path = "src/bin/server.rs"
+
 [dependencies]
-dashmap = "5.4.0"
-ring = "0.16.20"
+async-stream = "0.3.4"
+atoi = "2.0.0"
+bytes = "1.4.0"
+clap = {version = "4.1.6", features = ["derive"]}
+rand = "0.8.5"
+tokio = {version = "1.25.0", features = ["full"]}
+tokio-stream = "0.1.12"
+tracing = "0.1.37"
+tracing-futures = "0.2.5"
+tracing-subscriber = "0.3.16"
+
+[dev-dependencies]
+tokio = { version =  "1.25.0", features=["test-util"]}
