@@ -93,7 +93,7 @@ struct Handler {
     _shutdown_complete: mpsc::Sender<()>,
 }
 
-/// Maximum number of concurrent connections the redis server will accept.
+/// Maximum number of concurrent connections the database server will accept.
 ///
 /// When this limit is reached, the server will stop accepting connections until
 /// an active connection terminates.
@@ -107,7 +107,7 @@ struct Handler {
 /// well).
 const MAX_CONNECTIONS: usize = 250;
 
-/// Run the mini-redis server.
+/// Run the LightningDB server.
 ///
 /// Accepts connections from the supplied listener. For each inbound connection,
 /// a task is spawned to handle that connection. The server runs until the
@@ -168,7 +168,7 @@ pub async fn run(listener: TcpListener, shutdown: impl Future) {
         }
         _ = shutdown => {
             // The shutdown signal has been received.
-            info!("shutting down");
+            info!("shutting down...");
         }
     }
 

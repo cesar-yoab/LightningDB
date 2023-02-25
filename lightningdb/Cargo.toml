@@ -8,11 +8,6 @@ An attempt at creating an in-memory database.
 """
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[[bin]]
-name = "lightningdb-cli"
-path = "src/bin/cli.rs"
-
 [[bin]]
 name = "lightningdb-server"
 path = "src/bin/server.rs"

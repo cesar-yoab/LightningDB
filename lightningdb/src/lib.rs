@@ -25,9 +25,6 @@
 //!   intermediate representation between a "command" and the byte
 //!   representation.
 
-pub mod blocking_client;
-pub mod client;
-
 pub mod cmd;
 pub use cmd::Command;
 
@@ -45,9 +42,6 @@ mod parse;
 use parse::{Parse, ParseError};
 
 pub mod server;
-
-mod buffer;
-pub use buffer::{buffer, Buffer};
 
 mod shutdown;
 use shutdown::Shutdown;

@@ -19,14 +19,6 @@ pub struct Publish {
 }
 
 impl Publish {
-    /// Create a new `Publish` command which sends `message` on `channel`.
-    pub(crate) fn new(channel: impl ToString, message: Bytes) -> Publish {
-        Publish {
-            channel: channel.to_string(),
-            message,
-        }
-    }
-
     /// Parse a `Publish` instance from a received frame.
     ///
     /// The `Parse` argument provides a cursor-like API to read fields from the
@@ -84,18 +76,5 @@ impl Publish {
         dst.write_frame(&response).await?;
 
         Ok(())
-    }
-
-    /// Converts the command into an equivalent `Frame`.
-    ///
-    /// This is called by the client when encoding a `Publish` command to send
-    /// to the server.
-    pub(crate) fn into_frame(self) -> Frame {
-        let mut frame = Frame::array();
-        frame.push_bulk(Bytes::from("publish".as_bytes()));
-        frame.push_bulk(Bytes::from(self.channel.into_bytes()));
-        frame.push_bulk(self.message);
-
-        frame
     }
 }
